@@ -4,11 +4,15 @@ SRC_DIR=src
 
 build: main.bin main_floppy.img
 
-main_floppy.img: main.bin
-	cp main.bin main_floppy.img
-	truncate -s 1440k main_floppy.img
-main.bin: $(SRC_DIR)/main.asm
-	$(ASM) $(SRC_DIR)/main.asm -f bin -o main.bin
+main_floppy.img: loader.bin
+	cp loader.bin loader.img
+	truncate -s 1440k loader.img
 
-run:
-	qemu-system-i386 -fda main_floppy.img
+main.bin:
+	$(ASM) $(SRC_DIR)/main.asm -f bin -o loader.bin
+
+run: build
+	@qemu-system-x86_64 -drive format=raw,index=0,media=disk,file=loader.img
+
+binary:
+	od -t x1 -A n boot loader.bin
