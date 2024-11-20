@@ -1,29 +1,20 @@
-[org 0x7c00]
-;BITS 16 
+org 0x7c00]
+[bits 16]
 
-	mov [BOOT_DRIVE], dl
+	mov [BOOT_DRIVE], dl ;store the boot drive in BOOT_DRIVE
 
-	mov bp, 0x8000
+	mov bp, 0x8000 ; setup stack far away at 0x8000th byte
 	mov sp, bp
 
-	mov bx, 0x9000
-	mov dh, 5
+	mov bx, 0x9000 ; load the 5 sectors to 0x0000(ES) : 0x9000(BX) from the boot
+	mov dh, 5			 ; disk
 	mov dl, [BOOT_DRIVE]
 	call disk_load 
 
-	mov dx, [0x9000]
+	mov dx, [0x9000] ; print out the first loaded wored in the first loaded sector
 	call print_hex
 
-	mov dx, [0x9000 + 512]
-	call print_hex
-
-	mov bx, HELLO_MSG
-	call print_string
-
-	mov bx, GOODBYE_MSG
-	call print_string
-
-	mov dx, 0x1fbf
+	mov dx, [0x9000 + 512] ; print the word in the next sector
 	call print_hex
 
 	jmp $
@@ -31,9 +22,6 @@
 %include "src/print_string.asm"
 %include "src/print_hex.asm"
 %include "src/disk.asm"
-HELLO_MSG: db "Hello, Tonie!", 0
-
-GOODBYE_MSG: db "Goodbye!", 0
 
 BOOT_DRIVE: db 0
 
