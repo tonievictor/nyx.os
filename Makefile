@@ -1,18 +1,30 @@
 ASM=nasm
-
+CC=gcc
 SRC_DIR=src
+KERNEL.C=$(SRC_DIR)/kernel.c
+KERNEL.ASM=$(SRC_DIR)/kernel_entry.asm
+BOOT_SECT.ASM=$(SRC_DIR)/boot_sector.asm
 
-build: main.bin main_floppy.img
+os.image: boot_sect.bin kernel.bin
+	cat $^ > os.img
 
-main_floppy.img: loader.bin
-	cp loader.bin loader.img
-	truncate -s 1440k loader.img
+kernel.bin: kernel_entry.o kernel.o
+	ld -o kernel.bin -Ttext 0x1000 $^ --oformat binary
 
-main.bin:
-	$(ASM) $(SRC_DIR)/main.asm -f bin -o loader.bin
+kernel.o: $(KERNEL.C)
+	$(CC) -ffreestanding -c $< -o $@
 
-run: build
-	@qemu-system-x86_64 -drive format=raw,index=0,media=disk,file=loader.img
+kernel_entry.o: $(KERNEL.ASM)
+	$(ASM) $(KERNEL.ASM) -f elf64 -o $@
 
-binary:
-	od -t x1 -A n boot loader.bin
+clean:
+	rm *.bin *.o
+
+boot_sect.bin: $(BOOT_SECT.ASM)
+	$(ASM) $< -f bin -o $@
+
+run: os.image
+	@qemu-system-x86_64 -drive format=raw,index=0,media=disk,file=os.img
+
+kernel.dis: kernel.bin
+	ndisasm -b 32 $< > $@
