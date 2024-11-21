@@ -6,6 +6,7 @@ print_hex:
 
 	inc si
 	inc si
+
 hloop:
 	mov bx, dx
 	shr bx, cl
@@ -27,7 +28,7 @@ store:
 	jmp hloop
 
 hprint:
-	mov bx, HEX_OUT 
+	mov  bx, HEX_OUT
 	call print_string
 	popa
 	ret
