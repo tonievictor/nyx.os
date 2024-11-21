@@ -1,9 +1,8 @@
 ASM=nasm
 CC=gcc
-SRC_DIR=src
-KERNEL.C=$(SRC_DIR)/kernel.c
-KERNEL.ASM=$(SRC_DIR)/kernel_entry.asm
-BOOT_SECT.ASM=$(SRC_DIR)/boot_sector.asm
+KERNEL.C=kernel/kernel.c
+KERNEL.ASM=kernel/kernel_entry.asm
+BOOT_SECT.ASM=boot/boot_sector.asm
 
 os.image: boot_sect.bin kernel.bin
 	cat $^ > os.img
@@ -18,7 +17,7 @@ kernel_entry.o: $(KERNEL.ASM)
 	$(ASM) $(KERNEL.ASM) -f elf64 -o $@
 
 clean:
-	rm *.bin *.o
+	rm *.bin *.o *.dis
 
 boot_sect.bin: $(BOOT_SECT.ASM)
 	$(ASM) $< -f bin -o $@
