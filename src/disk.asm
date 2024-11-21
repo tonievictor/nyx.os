@@ -9,7 +9,7 @@ disk_load:
 	mov dh, 0x00; select the 0th head
 
 	mov cl, 0x02; start reading from the second sector (the boot sector is
-							; technically in the first)
+	;   technically in the first)
 
 	int 0x13; call the BIOS interrupt
 	jc  disk_error; jump if an error occured
