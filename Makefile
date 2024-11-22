@@ -1,29 +1,29 @@
 ASM=nasm
 CC=gcc
-KERNEL.C=kernel/kernel.c
-KERNEL.ASM=kernel/kernel_entry.asm
-BOOT_SECT.ASM=boot/boot_sector.asm
+C_SOURCES=$(wildcard kernel/*.c drivers/*.c)
+HEADERS=$(wildcard kernel/*.h drivers/*.h)
+OBJ=${C_SOURCES:.c=.o}
 
-os.image: boot_sect.bin kernel.bin
+os.image: boot/boot_sector.bin kernel.bin
 	cat $^ > os.img
 
-kernel.bin: kernel_entry.o kernel.o
+kernel.bin: kernel/kernel_entry.o ${OBJ}
 	ld -o kernel.bin -Ttext 0x1000 $^ --oformat binary
 
-kernel.o: $(KERNEL.C)
+%.o: %.c ${HEADERS}
 	$(CC) -ffreestanding -c $< -o $@
 
-kernel_entry.o: $(KERNEL.ASM)
-	$(ASM) $(KERNEL.ASM) -f elf64 -o $@
+%.o: %.asm
+	nasm $< -f elf64 -o $@
 
 clean:
-	rm *.bin *.o *.dis
+	@find . -type f \( -name "*.bin" -o -name "*.o" -o -name "*.dis" \) -exec rm {} \;
 
-boot_sect.bin: $(BOOT_SECT.ASM)
+%.bin: %.asm
 	$(ASM) $< -f bin -o $@
 
 run: os.image
 	@qemu-system-x86_64 -drive format=raw,index=0,media=disk,file=os.img
 
-kernel.dis: kernel.bin
+%.dis: %.bin
 	ndisasm -b 32 $< > $@
